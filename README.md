@@ -73,16 +73,6 @@ Runs a small script-based container that reads Docker logs and produces summarie
 
 The project uses environment variables from the `.env` file:
 
-```env
-POSTGRES_HOST=postgres
-POSTGRES_PORT=5432
-POSTGRES_USERNAME=postgres
-POSTGRES_PASSWORD=secret
-POSTGRES_DATABASE_NAME=postgres
-REDIS_HOST=redis
-REDIS_PORT=6379
-```
-
 You can customize these values as needed before starting the stack.
 
 ## Getting Started
