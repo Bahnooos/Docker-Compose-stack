@@ -62,6 +62,12 @@ app.get('/users', async (req, res) => {
     }
     res.send(JSON.parse(user));
 })
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: 'OK',
+        message: 'API is healthy'
+    });
+});
 
 app.post('/users', async (req, res) => {
     const newUser = req.body;
