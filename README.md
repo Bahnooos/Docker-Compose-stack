@@ -164,6 +164,19 @@ docker run --rm -v docker-task_logs_data:/logs alpine cat /logs/summary.txt
 
 The report is stored in the persistent `logs_data` Docker volume.
 
+### Running the Log Summarizer
+
+The log summarizer is designed as a one-shot job, not a continuously running service.
+
+It is not intended to remain running after Docker Compose starts the stack. After generating the summary, the container exits successfully with exit code 0.
+
+To generate or update the report, run:
+
+```bash
+docker compose run --rm log_summariser
+```
+
+The generated report is saved to the `logs_data` Docker volume at `/logs/summary.txt`.
 ## Useful Commands
 
 ```bash
