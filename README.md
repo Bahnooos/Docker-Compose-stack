@@ -71,7 +71,21 @@ Runs a small script-based container that reads Docker logs and produces summarie
 
 ## Configuration
 
-The project uses environment variables from the `.env` file:
+### Environment Setup
+
+Before starting the application, create your local environment file from the example:
+
+**Linux:**
+```
+cp .env.example .env
+```
+
+The `.env.example` file contains the required development configuration. Update the values if needed.
+
+The actual `.env` file is excluded from Git to avoid committing local environment credentials.
+
+Start the application:
+
 
 You can customize these values as needed before starting the stack.
 
