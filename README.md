@@ -26,16 +26,15 @@ It is designed to run locally with a single Docker Compose command and provides 
 ## Project Structure
 
 ```text
-.
-├── .dockerignore
-├── .env
-├── Dockerfile
+
+docker-task/
+├── .env.example
+├── .gitignore
 ├── docker-compose.yaml
+├── Dockerfile
 ├── index.js
 ├── nginx/
 │   └── default.conf
-├── package.json
-├── package-lock.json
 ├── scripts/
 │   ├── Dockerfile
 │   └── log-summary.sh
@@ -69,25 +68,23 @@ Acts as a reverse proxy and exposes the app on port `8000`.
 
 Runs a small script-based container that reads Docker logs and produces summaries for the stack.
 
-## Configuration
-
-### Environment Setup
+### Configuration
 
 Before starting the application, create your local environment file from the example:
 
-**Linux:**
-```
+**Linux / macOS:**
+```bash
 cp .env.example .env
 ```
 
-The `.env.example` file contains the required development configuration. Update the values if needed.
+The `.env.example` file provides the required environment variable names and default development values. Review and update the values in your local `.env` file if needed.
 
-The actual `.env` file is excluded from Git to avoid committing local environment credentials.
+The actual `.env` file is excluded from Git to prevent committing local environment credentials.
 
-Start the application:
-
-
-You can customize these values as needed before starting the stack.
+**Start the application:**
+```bash
+docker compose up -d
+```
 
 ## Getting Started
 
