@@ -1,32 +1,27 @@
 # Docker Compose Stack
 
-A containerized full-stack stack for a Node.js API backed by PostgreSQL and Redis, exposed through Nginx and orchestrated with Docker Compose.
+A containerized full-stack application built with Node.js, Express, PostgreSQL, and Redis, exposed through an Nginx reverse proxy and orchestrated using Docker Compose.
 
 ## Overview
 
-This project bundles the following services:
+This project provides a multi-container environment with an API, database, cache, reverse proxy, and a Bash-based log summarizer.
 
-- Node.js app with Express
-- PostgreSQL database
-- Redis cache
-- Nginx reverse proxy
-- Log summarizer container for Docker logs
-
-It is designed to run locally with a single Docker Compose command and provides a simple API for user management.
+The stack can be started using a single Docker Compose command.
 
 ## Features
 
-- Express API running on port 3000
-- PostgreSQL persistence with Sequelize
-- Redis-based cached user list
-- Nginx listening on port 8000 and forwarding requests to the app
-- Dockerized log summarizer service
-- Environment-based configuration via `.env`
+- Node.js Express API running on port 3000
+- PostgreSQL persistence using Sequelize
+- Redis caching for user data
+- Nginx reverse proxy exposed on port 8000
+- Nginx access and error logging using a shared Docker volume
+- Bash log summarizer that analyzes Nginx access logs
+- HTTP status code statistics (2xx, 3xx, 4xx, and 5xx)
+- Environment-based configuration using `.env`
 
 ## Project Structure
 
 ```text
-
 docker-task/
 ├── .env.example
 ├── .gitignore
@@ -44,59 +39,67 @@ docker-task/
 ## Services
 
 ### App
-
-The main application is a Node.js Express service that:
-
-- connects to PostgreSQL using Sequelize
-- connects to Redis
-- serves a simple homepage
-- exposes `/health`, `/users`, and `POST /users`
+A Node.js Express application that:
+- Connects to PostgreSQL using Sequelize.
+- Connects to Redis.
+- Serves a homepage.
+- Exposes `/health`, `/users`, and `POST /users`.
 
 ### PostgreSQL
-
-Runs the official `postgres:17` image.
+Uses the official `postgres:17` image for persistent database storage.
 
 ### Redis
-
-Runs the official `redis:latest` image.
+Uses Redis for caching user data.
 
 ### Nginx
+Acts as a reverse proxy, forwarding incoming requests from port 8000 to the application on port 3000.
 
-Acts as a reverse proxy and exposes the app on port `8000`.
+Nginx access and error logs are stored in a shared Docker volume.
 
 ### Log Summarizer
+A lightweight Alpine-based container that runs a Bash script to analyze Nginx access logs.
 
-Runs a small script-based container that reads Docker logs and produces summaries for the stack.
+The generated report includes:
+- Total HTTP requests.
+- Successful requests (2xx).
+- Redirect requests (3xx).
+- Client errors (4xx).
+- Server errors (5xx).
+- The five most recent requests.
 
-### Configuration
+The summary is saved to `/logs/summary.txt` in the `logs_data` Docker volume.
 
-Before starting the application, create your local environment file from the example:
+## Configuration
+
+Create your local environment file from the example:
 
 **Linux / macOS:**
 ```bash
 cp .env.example .env
 ```
 
-The `.env.example` file provides the required environment variable names and default development values. Review and update the values in your local `.env` file if needed.
+The `.env.example` file provides the required environment variable names and default development values.
 
-The actual `.env` file is excluded from Git to prevent committing local environment credentials.
+Review the values in `.env` before starting the stack.
 
-**Start the application:**
-```bash
-docker compose up -d
-```
+The actual `.env` file is excluded from Git to prevent committing local credentials.
 
 ## Getting Started
 
 ### Prerequisites
-
 - Docker
 - Docker Compose
 
 ### Start the stack
 
 ```bash
-docker compose up --build
+docker compose up -d --build
+```
+
+### Check services
+
+```bash
+docker compose ps
 ```
 
 ### Stop the stack
@@ -107,35 +110,29 @@ docker compose down
 
 ## Access Points
 
-- App: http://localhost:3000
-- Nginx: http://localhost:8000
-- PostgreSQL: localhost:5432
+- API: http://localhost:3000
+- Nginx Reverse Proxy: http://localhost:8000
+- PostgreSQL: localhost:5432 (if using the default host port)
 - Redis: localhost:6379
 
 ## API Endpoints
 
 ### GET /
-
 Returns:
-
 ```text
 Hello World!
 ```
 
 ### GET /health
-
-Returns service health information.
+Returns API health information.
 
 ### GET /users
-
-Fetches users from Redis cache if available; otherwise loads them from PostgreSQL and stores them in Redis for 10 seconds.
+Fetches users from Redis cache if available; otherwise retrieves them from PostgreSQL and caches the result for 10 seconds.
 
 ### POST /users
-
-Creates a new user record.
+Creates a new user.
 
 Example request body:
-
 ```json
 {
   "name": "Alice",
@@ -143,24 +140,58 @@ Example request body:
 }
 ```
 
+## Log Summarizer
+
+Generate some requests through Nginx:
+
+```bash
+curl http://localhost:8000/health
+curl http://localhost:8000/
+curl http://localhost:8000/users
+```
+
+Run the summarizer:
+
+```bash
+docker compose run --rm log_summariser
+```
+
+View the generated report:
+
+```bash
+docker run --rm -v docker-task_logs_data:/logs alpine cat /logs/summary.txt
+```
+
+The report is stored in the persistent `logs_data` Docker volume.
+
 ## Useful Commands
 
 ```bash
 # View running containers
 docker compose ps
 
-# View logs
+# View all containers, including exited ones
+docker compose ps -a
+
+# View service logs
 docker compose logs -f
 
-# Rebuild after changes
-docker compose up --build
+# Rebuild services
+docker compose up -d --build
+
+# Run the log summarizer
+docker compose run --rm log_summariser
+
+# Stop services
+docker compose down
 ```
 
 ## Notes
 
-- The app container exposes port `3000` internally.
-- Nginx routes traffic from port `8000` to the Node.js app.
-- Persistent storage is configured for PostgreSQL and logs data using Docker volumes.
+- Nginx forwards requests to the Node.js application.
+- PostgreSQL data is persisted using a named Docker volume.
+- Nginx logs and generated summaries use separate named Docker volumes.
+- The log summarizer runs once and exits after generating its report.
 
 ## License
 
